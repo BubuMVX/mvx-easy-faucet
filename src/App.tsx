@@ -7,7 +7,7 @@ import {
 } from "@multiversx/sdk-core/out";
 import {NativeAuthClient} from "@multiversx/sdk-native-auth-client";
 import {ApiNetworkProvider} from "@multiversx/sdk-network-providers/out";
-import {Mnemonic, UserSigner} from "@multiversx/sdk-wallet/out";
+import {UserSigner} from "@multiversx/sdk-wallet/out";
 import useLocalStorage from "@reactutils/use-local-storage";
 import axios from "axios";
 import BigNumber from "bignumber.js";
@@ -16,7 +16,7 @@ import {Card, Col, Container, FloatingLabel, Form, Image, Row} from "react-boots
 import mvxLogo from "./assets/images/multiversx-logo.svg";
 import {Captcha} from "./components/Captcha.tsx";
 import {networks} from "./config.tsx";
-import {DECIMALS, isValidWalletAddress} from "./utils/multiversx.tsx";
+import {DECIMALS, generateWalletOnShard, isValidWalletAddress} from "./utils/multiversx.tsx";
 import {sleep} from "./utils/sleep.tsx";
 
 export const App = () => {
@@ -48,11 +48,9 @@ export const App = () => {
             config: factoryConfig,
         })
 
-        const mnemonic = Mnemonic.generate()
-        const key = mnemonic.deriveKey(0)
-        const address = key.generatePublicKey().toAddress()
-        const walletSigner = new UserSigner(key)
-        console.log('Temp wallet', address.bech32())
+        const tempWallet = generateWalletOnShard(networkConfig.faucetShard)
+        const walletSigner = new UserSigner(tempWallet.key)
+        console.log('Temp wallet', tempWallet.address.bech32())
 
         setMessage('Asking the faucet...')
         const client = new NativeAuthClient({
@@ -62,12 +60,12 @@ export const App = () => {
         const authInit = await client.initialize()
         //const authSign = authInit.substring(authInit.indexOf('.') + 1, authInit.length)
         const authMessage = new Message({
-            data: Buffer.from(`${address.bech32()}${authInit}`),
+            data: Buffer.from(`${tempWallet.address.bech32()}${authInit}`),
         })
         const messageComputer = new MessageComputer()
         const serializedMessage = messageComputer.computeBytesForSigning(authMessage)
         const authSignature = await walletSigner.sign(serializedMessage)
-        const accessToken = client.getToken(address.bech32(), authInit, authSignature.toString('hex'))
+        const accessToken = client.getToken(tempWallet.address.bech32(), authInit, authSignature.toString('hex'))
 
         const response = await axios.post(`${networkConfig.apiExtras}/faucet`,
             {
@@ -84,12 +82,9 @@ export const App = () => {
         let loadingFunds = true
 
         do {
-            const tempWallet = await provider.getAccount(address)
-            loadingFunds = tempWallet.balance.isZero()
-
-            if (loadingFunds) {
-                await sleep(1000)
-            }
+            const tempWalletOnNetwork = await provider.getAccount(tempWallet.address)
+            loadingFunds = tempWalletOnNetwork.balance.isZero()
+            await sleep(1000)
         } while (loadingFunds)
 
         setMessage('Sending funds to your wallet...')
@@ -97,7 +92,7 @@ export const App = () => {
             .minus(networkConfig.transferGasFees)
             .shiftedBy(DECIMALS)
         const transaction = factory.createTransactionForNativeTokenTransfer({
-            sender: address,
+            sender: tempWallet.address,
             receiver: new Address(wallet),
             nativeAmount: BigInt(amount.toFixed()),
         })

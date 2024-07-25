@@ -10,5 +10,6 @@ export type NetworksSettingsType = {
     apiExtras: string,
     recaptchaKey: string,
     faucetAmount: number,
+    faucetShard: number,
     transferGasFees: number,
 }

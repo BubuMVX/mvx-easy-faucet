@@ -7,6 +7,7 @@ export const networks: NetworksType = {
         apiExtras: "https://devnet-extras-api.multiversx.com",
         recaptchaKey: "6LeOnY0fAAAAABCn_KfmqldzSsOEOP1JHvdfyYGd",
         faucetAmount: 5,
+        faucetShard: 1,
         transferGasFees: 0.00005,
     },
     testnet: {
@@ -14,7 +15,8 @@ export const networks: NetworksType = {
         api: "https://testnet-api.multiversx.com",
         apiExtras: "https://testnet-extras-api.multiversx.com",
         recaptchaKey: "6LeOnY0fAAAAABCn_KfmqldzSsOEOP1JHvdfyYGd",
-        faucetAmount: 5,
+        faucetAmount: 30,
+        faucetShard: 1,
         transferGasFees: 0.00005,
     },
 }
