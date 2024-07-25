@@ -1,0 +1,57 @@
+@import "fonts";
+@import "variables";
+@import "node_modules/bootstrap/scss/bootstrap";
+
+::selection {
+  color: $black;
+  background: lighten($secondary, 30%);
+}
+
+.min-vh-100 {
+  min-height: 100svh !important;
+}
+
+h1 {
+  @extend .text-center;
+}
+
+.form-floating {
+  > .form-control:focus,
+  > .form-control:not(:placeholder-shown),
+  > .form-control-plaintext,
+  > .form-select {
+    ~ label {
+
+      &::after {
+        background-color: transparent;
+      }
+    }
+  }
+
+  > .form-select {
+    padding-top: 1.025rem;
+  }
+}
+
+.align-super {
+  vertical-align: super;
+}
+
+.recaptcha {
+  @extend .d-inline;
+  /*transform: scale(0.7);*/
+
+  > div {
+    @extend .d-inline;
+
+    > div {
+      @extend .d-inline;
+    }
+  }
+}
+
+.card {
+  .card-header {
+    @extend .text-center;
+  }
+}
